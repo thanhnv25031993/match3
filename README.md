@@ -6,7 +6,8 @@
 1. Performing at least 3 changes can improve game performance.
 - Optimizing textures by Sprite Atlas 
 - Optimizing load game object from resource load to Addressable manager, for more details look for AddressableManager.cs file
-- Optimizing spawn game object by Object pooling 
+- Optimizing spawn game object by Object pooling
+- Add bomd delay time explosion after 0.5 second and then move down the item 
 
 2. Use Scriptable Object to reskin all normal item textures (7 items) with new textures inside folder Textures/Fish.
 - Look for the GameData folder and ItemSkinData data. This data handles switching from old sprites to new sprites (fish folder). I have attached the script to each item to load the sprite by ID in the data. 
