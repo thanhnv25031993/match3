@@ -8,7 +8,7 @@ public class ItemSkin : MonoBehaviour
     public string id;
 
     private SpriteRenderer _spriteRenderer;
-    
+
 
 
     private void OnEnable()
@@ -16,8 +16,10 @@ public class ItemSkin : MonoBehaviour
         if (_spriteRenderer == null)
         {
             _spriteRenderer = this.GetComponent<SpriteRenderer>();
+            _spriteRenderer.sprite = AddressableManager.instance.ItemData.GetItemSkin(id);
+
         }
-        _spriteRenderer.sprite = AddressableManager.instance.ItemData.GetItemSkin(id);
+
 
     }
 }

@@ -147,7 +147,7 @@ public class BoardController : MonoBehaviour
         else if (cell2.Item is BonusItem)
         {
             cell2.ExplodeItem();
-            StartCoroutine(ShiftDownItemsCoroutine());
+            StartCoroutine(ShiftDownItemsCoroutine(0.5f));
         }
         else
         {
@@ -221,10 +221,12 @@ public class BoardController : MonoBehaviour
     {
         for (int i = 0; i < matches.Count; i++)
         {
+
             matches[i].ExplodeItem();
+        
         }
 
-        if(matches.Count > m_gameSettings.MatchesMin)
+        if (matches.Count > m_gameSettings.MatchesMin)
         {
             m_board.ConvertNormalToBonus(matches, cellEnd);
         }
@@ -232,8 +234,9 @@ public class BoardController : MonoBehaviour
         StartCoroutine(ShiftDownItemsCoroutine());
     }
 
-    private IEnumerator ShiftDownItemsCoroutine()
+    private IEnumerator ShiftDownItemsCoroutine(float time = 0)
     {
+        yield return new WaitForSeconds(time);
         m_board.ShiftDownItems();
 
         yield return new WaitForSeconds(0.2f);

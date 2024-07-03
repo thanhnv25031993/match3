@@ -47,80 +47,80 @@ public class Board
         AddressableManager.instance.AdressableLoadObjectByKey(Constants.PREFAB_CELL_BACKGROUND, prefabBG =>
         {
             for (var x = 0; x < boardSizeX; x++)
-            for (var y = 0; y < boardSizeY; y++)
-            {
-                var go = Object.Instantiate(prefabBG);
-                go.transform.position = origin + new Vector3(x, y, 0f);
-                go.transform.SetParent(m_root);
+                for (var y = 0; y < boardSizeY; y++)
+                {
+                    var go = Object.Instantiate(prefabBG);
+                    go.transform.position = origin + new Vector3(x, y, 0f);
+                    go.transform.SetParent(m_root);
 
-                var cell = go.GetComponent<Cell>();
-                cell.Setup(x, y);
+                    var cell = go.GetComponent<Cell>();
+                    cell.Setup(x, y);
 
-                m_cells[x, y] = cell;
-            }
+                    m_cells[x, y] = cell;
+                }
 
             //set neighbours
             for (var x = 0; x < boardSizeX; x++)
-            for (var y = 0; y < boardSizeY; y++)
-            {
-                if (y + 1 < boardSizeY) m_cells[x, y].NeighbourUp = m_cells[x, y + 1];
-                if (x + 1 < boardSizeX) m_cells[x, y].NeighbourRight = m_cells[x + 1, y];
-                if (y > 0) m_cells[x, y].NeighbourBottom = m_cells[x, y - 1];
-                if (x > 0) m_cells[x, y].NeighbourLeft = m_cells[x - 1, y];
-            }
+                for (var y = 0; y < boardSizeY; y++)
+                {
+                    if (y + 1 < boardSizeY) m_cells[x, y].NeighbourUp = m_cells[x, y + 1];
+                    if (x + 1 < boardSizeX) m_cells[x, y].NeighbourRight = m_cells[x + 1, y];
+                    if (y > 0) m_cells[x, y].NeighbourBottom = m_cells[x, y - 1];
+                    if (x > 0) m_cells[x, y].NeighbourLeft = m_cells[x - 1, y];
+                }
         });
     }
 
     internal void Fill()
     {
         for (var x = 0; x < boardSizeX; x++)
-        for (var y = 0; y < boardSizeY; y++)
-        {
-            var cell = m_cells[x, y];
-            var item = new NormalItem();
-
-            var types = new List<NormalItem.eNormalType>();
-
-            if (cell.NeighbourBottom != null)
+            for (var y = 0; y < boardSizeY; y++)
             {
-                var nitem = cell.NeighbourBottom.Item as NormalItem;
-                if (nitem != null) types.Add(nitem.ItemType);
+                var cell = m_cells[x, y];
+                var item = new NormalItem();
+
+                var types = new List<NormalItem.eNormalType>();
+
+                if (cell.NeighbourBottom != null)
+                {
+                    var nitem = cell.NeighbourBottom.Item as NormalItem;
+                    if (nitem != null) types.Add(nitem.ItemType);
+                }
+
+                if (cell.NeighbourLeft != null)
+                {
+                    var nitem = cell.NeighbourLeft.Item as NormalItem;
+                    if (nitem != null) types.Add(nitem.ItemType);
+                }
+
+                item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
+                item.SetView();
+                item.SetViewRoot(m_root);
+
+                cell.Assign(item);
+                cell.ApplyItemPosition(false);
             }
-
-            if (cell.NeighbourLeft != null)
-            {
-                var nitem = cell.NeighbourLeft.Item as NormalItem;
-                if (nitem != null) types.Add(nitem.ItemType);
-            }
-
-            item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
-            item.SetView();
-            item.SetViewRoot(m_root);
-
-            cell.Assign(item);
-            cell.ApplyItemPosition(false);
-        }
     }
 
     internal void Shuffle()
     {
         var list = new List<Item>();
         for (var x = 0; x < boardSizeX; x++)
-        for (var y = 0; y < boardSizeY; y++)
-        {
-            list.Add(m_cells[x, y].Item);
-            m_cells[x, y].Free();
-        }
+            for (var y = 0; y < boardSizeY; y++)
+            {
+                list.Add(m_cells[x, y].Item);
+                m_cells[x, y].Free();
+            }
 
         for (var x = 0; x < boardSizeX; x++)
-        for (var y = 0; y < boardSizeY; y++)
-        {
-            var rnd = Random.Range(0, list.Count);
-            m_cells[x, y].Assign(list[rnd]);
-            m_cells[x, y].ApplyItemMoveToPosition();
+            for (var y = 0; y < boardSizeY; y++)
+            {
+                var rnd = Random.Range(0, list.Count);
+                m_cells[x, y].Assign(list[rnd]);
+                m_cells[x, y].ApplyItemMoveToPosition();
 
-            list.RemoveAt(rnd);
-        }
+                list.RemoveAt(rnd);
+            }
     }
 
     internal void FillGapsWithNewItems()
@@ -129,44 +129,47 @@ public class Board
 
         // Count item occurrences
         for (var x = 0; x < boardSizeX; x++)
-        for (var y = 0; y < boardSizeY; y++)
-        {
-            var cell = m_cells[x, y];
-            if (cell.IsEmpty) continue;
-
-            Debug.Log(cell.Item);
-            if (cell.Item is BonusItem)
+            for (var y = 0; y < boardSizeY; y++)
             {
-                continue;
-                ;
+                var cell = m_cells[x, y];
+                if (cell.IsEmpty) continue;
+
+                if (cell.Item is BonusItem)
+                {
+                    continue;
+                }
+
+                var itemType = ((NormalItem)cell.Item).ItemType; // Get existing item type
+                if (!itemCounts.ContainsKey(itemType)) itemCounts.Add(itemType, 0);
+
+                itemCounts[itemType]++;
             }
-
-            var itemType = ((NormalItem)cell.Item).ItemType; // Get existing item type
-            if (!itemCounts.ContainsKey(itemType)) itemCounts.Add(itemType, 0);
-
-            itemCounts[itemType]++;
-        }
 
         var min = itemCounts.Min(m => m.Value);
         var itemFound = NormalItem.eNormalType.TYPE_ONE;
         foreach (var item in itemCounts.Where(item => item.Value == min)) itemFound = item.Key;
 
         for (var x = 0; x < boardSizeX; x++)
-        for (var y = 0; y < boardSizeY; y++)
-        {
-            var cell = m_cells[x, y];
-            if (!cell.IsEmpty) continue;
+            for (var y = 0; y < boardSizeY; y++)
+            {
+                var cell = m_cells[x, y];
+                if (!cell.IsEmpty) continue;
+                if (cell.Item is BonusItem)
+                {
+                    continue;
+                }
 
-            var item = new NormalItem();
-            var type = GetValidItemTypes(x, y, itemFound);
 
-            item.SetType(type);
-            item.SetView();
-            item.SetViewRoot(m_root);
+                var item = new NormalItem();
+                var type = GetValidItemTypes(x, y, itemFound);
 
-            cell.Assign(item);
-            cell.ApplyItemPosition(true);
-        }
+                item.SetType(type);
+                item.SetView();
+                item.SetViewRoot(m_root);
+
+                cell.Assign(item);
+                cell.ApplyItemPosition(true);
+            }
     }
 
     private NormalItem.eNormalType GetValidItemTypes(int x, int y, NormalItem.eNormalType minvalue)
@@ -201,7 +204,7 @@ public class Board
         return type;
     }
 
-// Helper function to get item type at a specific cell (replace with actual logic)
+    // Helper function to get item type at a specific cell (replace with actual logic)
     private int GetItemType(int x, int y)
     {
         if (x < 0 || x >= boardSizeX || y < 0 || y >= boardSizeY) return -1; // Empty cell
@@ -215,11 +218,11 @@ public class Board
     internal void ExplodeAllItems()
     {
         for (var x = 0; x < boardSizeX; x++)
-        for (var y = 0; y < boardSizeY; y++)
-        {
-            var cell = m_cells[x, y];
-            cell.ExplodeItem();
-        }
+            for (var y = 0; y < boardSizeY; y++)
+            {
+                var cell = m_cells[x, y];
+                cell.ExplodeItem();
+            }
     }
 
     public void Swap(Cell cell1, Cell cell2, Action callback)
@@ -379,24 +382,24 @@ public class Board
         var list = new List<Cell>();
 
         for (var x = 0; x < boardSizeX; x++)
-        for (var y = 0; y < boardSizeY; y++)
-        {
-            var cell = m_cells[x, y];
-
-            var listhor = GetHorizontalMatches(cell);
-            if (listhor.Count >= m_matchMin)
+            for (var y = 0; y < boardSizeY; y++)
             {
-                list = listhor;
-                break;
-            }
+                var cell = m_cells[x, y];
 
-            var listvert = GetVerticalMatches(cell);
-            if (listvert.Count >= m_matchMin)
-            {
-                list = listvert;
-                break;
+                var listhor = GetHorizontalMatches(cell);
+                if (listhor.Count >= m_matchMin)
+                {
+                    list = listhor;
+                    break;
+                }
+
+                var listvert = GetVerticalMatches(cell);
+                if (listvert.Count >= m_matchMin)
+                {
+                    list = listvert;
+                    break;
+                }
             }
-        }
 
         return list;
     }
@@ -672,13 +675,13 @@ public class Board
     public void Clear()
     {
         for (var x = 0; x < boardSizeX; x++)
-        for (var y = 0; y < boardSizeY; y++)
-        {
-            var cell = m_cells[x, y];
-            cell.Clear();
+            for (var y = 0; y < boardSizeY; y++)
+            {
+                var cell = m_cells[x, y];
+                cell.Clear();
 
-            Object.Destroy(cell.gameObject);
-            m_cells[x, y] = null;
-        }
+                Object.Destroy(cell.gameObject);
+                m_cells[x, y] = null;
+            }
     }
 }
