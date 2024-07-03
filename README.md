@@ -21,6 +21,6 @@
 ### Additional Notes:
 - I was going to add an explosion effect to the bomb, but I don't think it's necessary
 - I have been fixed some minor bug in this project (basically is about null or exeption)
-- If the project is bigger, I will create a level design tool to make level design easier. This logic only spawns game objects randomly
-- Make the game logic more clear.
+- If the project is bigger, I will create a level design tool to make level design easier.
+- Spawn items have a logical system with each other
 - I must say, I don't like developing match-3 games
